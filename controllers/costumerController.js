@@ -51,7 +51,21 @@ export const searchTicket = (req, res, next) => {
     try {
         console.log("-------searchTicket-------");
         const {query} = req.body;
+        Ticket.aggregate([
+            {
+                $lookup: {
+                    from: "airplanes",
+                    localField: "ticketAirplaneId",
+                    foreignField: "_id",
+                    pipeline:[
 
+                    ],
+                    as: "airplane"
+                }
+            }
+        ], (error, tickets) => {
+            error ? console.log(error) : res.status(200).send(tickets)
+        });
     } catch (error) {
         next(error)
     }
