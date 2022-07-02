@@ -2,7 +2,7 @@ import express from 'express';
 import {
     buyTicket,
     cancelTicket, searchTicket
-} from '../controllers/costumerController'
+} from '../controllers/customerController'
 
 const customerRouter = express.Router();
 

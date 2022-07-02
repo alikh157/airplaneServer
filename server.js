@@ -8,7 +8,7 @@ import ticketRouter from './routes/ticketRouter';
 import customerRouter from "./routes/customerRouter";
 
 const corsOptions = {
-    origin: 'http://localhost:3001'
+    origin: 'http://localhost:3000'
 }
 dotenv.config();
 mongoose.connect(process.env.DB_URL, () => console.log("database connected..."))
