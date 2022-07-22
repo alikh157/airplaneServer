@@ -6,6 +6,11 @@ const airplaneSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    airplaneTripId: {
+        type: [mongoose.Types.ObjectId],
+        // required: true,
+        ref:'trips'
+    },
     airplaneModel: {
         type: String,
         required: true,

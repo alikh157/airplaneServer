@@ -58,7 +58,7 @@ export const searchTicket = (req, res, next) => {
                     from: 'airplanes',
                     localField: 'ticketAirplaneId',
                     foreignField: '_id',
-                    as: 'airplane'
+                    as: 'ticketAirplaneObject'
                 }
             },
             {
@@ -89,49 +89,49 @@ export const searchTicket = (req, res, next) => {
                     ]
                 },
             },
-            // {
-            //     $lookup: {
-            //         from: "airplanes",
-            //         as: "airplane",
-            //         pipeline: [
-            //             {
-            //                 $match: {
-            //                     $expr: {
-            //                         'airplaneAirlineName': {$regex: query, $options: 'i'}
-            //                     }
-            //                 }
-            //             }
-            //         ],
-            //     }
-            // }
+            {
+                $project:{
+                    ticketName:1,
+                    ticketDst:1,
+                    ticketSrc:1,
+                    ticketPNR:1,
+                    ticketPrice:1,
+                    ticketInternalOrExternal:1,
+                    ticketBusinessOrEconomy:1,
+                    ticketNumber:1,
+                    ticketIsCanceled:1,
+                    ticketCreateAt:1,
+                    ticketAirplaneObject: { $arrayElemAt: [ "$ticketAirplaneObject", 0 ] },
+                }
+            }
         ]).exec((error, tickets) => {
-            error ? next(error) : res.status(200).send(tickets)
-            //     res.json(new Serializer('tickets', {
-            //     attributes: [
-            //         'ticketName',
-            //         'ticketDst',
-            //         'ticketSrc',
-            //         'ticketPNR',
-            //         'ticketPrice',
-            //         'ticketInternalOrExternal',
-            //         'ticketBusinessOrEconomy',
-            //         'ticketNumber',
-            //         'ticketAirplaneId',
-            //         'ticketIsCanceled',
-            //         'ticketCreateAt',
-            //         'airplanes'
-            //     ],
-            //     airplanes: {
-            //         attributes: ['airplaneAirlineName',
-            //             'airplaneModel',
-            //             'airplaneImageSrc',
-            //             'airplaneCapacity',
-            //             'airplaneFlightNumber',
-            //             'airplaneTicketTakeOffTime',
-            //             'airplaneTicketLandingTime',
-            //             'airplaneCreateAt',]
-            //     }
-            // }).serialize(tickets));
+            error ? next(error) :
+                res.json(new Serializer('tickets', {
+                attributes: [
+                    'ticketName',
+                    'ticketDst',
+                    'ticketSrc',
+                    'ticketPNR',
+                    'ticketPrice',
+                    'ticketInternalOrExternal',
+                    'ticketBusinessOrEconomy',
+                    'ticketNumber',
+                    'ticketAirplaneId',
+                    'ticketIsCanceled',
+                    'ticketCreateAt',
+                    'ticketAirplaneObject'
+                ],
+                    ticketAirplaneObject: {
+                    attributes: ['airplaneAirlineName',
+                        'airplaneModel',
+                        'airplaneImageSrc',
+                        'airplaneCapacity',
+                        'airplaneFlightNumber',
+                        'airplaneTicketTakeOffTime',
+                        'airplaneTicketLandingTime',
+                        'airplaneCreateAt',]
+                }
+            }).serialize(tickets));
         });
     } catch (error) {
         next(error)

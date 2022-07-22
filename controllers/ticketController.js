@@ -42,14 +42,65 @@ export const createTicket = (req, res, next) => {
 export const readTickets = (req, res, next) => {
     try {
         console.log("-------readTickets-------");
-        Ticket.find({}, (error, tickets) => {
-            error ? next(error) : tickets.length === 0 ? next(new JoiError("NoTicketError", "There is no tickets in the database", 44, 404))
-                : res.json(new Serializer('tickets', {
-                    attributes: ['ticketName', 'ticketDst', 'ticketSrc', 'ticketPrice',
+        // Ticket.find({}, (error, tickets) => {
+        //     error ? next(error) : tickets.length === 0 ? next(new JoiError("NoTicketError", "There is no tickets in the database", 44, 404))
+        //         : res.json(new Serializer('tickets', {
+        //             attributes: ['ticketName', 'ticketDst', 'ticketSrc', 'ticketPrice',
+        //                 'ticketInternalOrExternal',
+        //                 'ticketBusinessOrEconomy',
+        //                 'ticketPNR',
+        //                 'ticketNumber', 'ticketAirplaneId', 'ticketTakenBy']
+        //         }).serialize(tickets));
+        // });
+        Ticket.aggregate([
+            {
+                $lookup: {
+                    from: 'airplanes',
+                    localField: 'ticketAirplaneId',
+                    foreignField: '_id',
+                    as: 'ticketAirplaneObject'
+                }
+            },{
+                $project:{
+                    ticketName:1,
+                    ticketDst:1,
+                    ticketSrc:1,
+                    ticketPNR:1,
+                    ticketPrice:1,
+                    ticketInternalOrExternal:1,
+                    ticketBusinessOrEconomy:1,
+                    ticketNumber:1,
+                    ticketIsCanceled:1,
+                    ticketCreateAt:1,
+                    ticketAirplaneObject: { $arrayElemAt: [ "$ticketAirplaneObject", 0 ] },
+                }
+            }
+        ]).exec((error, tickets) => {
+            error ? next(error) :
+                res.json(new Serializer('tickets', {
+                    attributes: [
+                        'ticketName',
+                        'ticketDst',
+                        'ticketSrc',
+                        'ticketPNR',
+                        'ticketPrice',
                         'ticketInternalOrExternal',
                         'ticketBusinessOrEconomy',
-                        'ticketPNR',
-                        'ticketNumber', 'ticketAirplaneId', 'ticketTakenBy']
+                        'ticketNumber',
+                        'ticketIsCanceled',
+                        'ticketCreateAt',
+                        'ticketAirplaneObject'
+                    ],
+                    ticketAirplaneObject: {
+                        attributes: ['airplaneAirlineName',
+                            'airplaneModel',
+                            'airplaneImageSrc',
+                            'airplaneCapacity',
+                            'airplaneFlightNumber',
+                            'airplaneTicketTakeOffTime',
+                            'airplaneTicketLandingTime',
+                            'airplaneCreateAt']
+                    }
                 }).serialize(tickets));
         });
     } catch (error) {

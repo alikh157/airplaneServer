@@ -182,7 +182,7 @@ export const uploadImgAirplanes = (req, res, next) => {
 export const giveImage = (req, res, next) => {
     try {
         console.log("-------giveImage-------");
-        const {fileName} = req.query
+        const {fileName} = req.query;
         console.log(fileName)
         File.findOne({fileName: fileName}, (error, file) => {
             if (error)
@@ -193,7 +193,7 @@ export const giveImage = (req, res, next) => {
             } else
                 next(new JoiError("notFoundError", "This file doesn't exist in database", 40, 404, {
                     pointer: req.path,
-                    parameter: "input"
+                    parameter: "query input"
                 }))
         })
     } catch (e) {
