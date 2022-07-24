@@ -8,7 +8,7 @@ export const createTrip = (req, res, next) => {
     try {
         console.log("-------createTrip-------");
         const {
-            airplaneId,
+            tripAirplaneId,
             tripName,
             tripDst,
             tripSrc,
@@ -20,6 +20,7 @@ export const createTrip = (req, res, next) => {
             tripBusinessOrEconomy,
         } = req.body;
         Trip.create({
+            tripAirplaneId,
             tripName,
             tripDst,
             tripSrc,
@@ -30,7 +31,7 @@ export const createTrip = (req, res, next) => {
             tripInternalOrExternal,
             tripBusinessOrEconomy,
         }, (error, trip) => {
-            error ? next(error) : Airplane.findOneAndUpdate({_id: airplaneId}, {$push: {airplaneTripId: trip._id}}, (error, airplane) => {
+            error ? next(error) : Airplane.findOneAndUpdate({_id: tripAirplaneId}, {$push: {airplaneTripId: trip._id}}, (error, airplane) => {
                 error ? next(error) : airplane ? res.status(200).send() : next(new JoiError("AirplaneNotFound", "This airplane doesn't exist.", 44, 404))
             })
         })
@@ -45,45 +46,74 @@ export const readAllTrips = (req, res, next) => {
         Trip.aggregate([
             {
                 $match: {}
-            },
-            {
+            }, {
+                $lookup: {
+                    from: 'airplanes',
+                    let: {'tripAirplaneId': '$tripAirplaneId'},
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $eq: ['$_id', "$$tripAirplaneId"]
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                tripAirplaneId: '$_id',
+                                tripAirplaneAirlineName: '$airplaneAirlineName',
+                                tripAirplaneModel: '$airplaneModel',
+                                tripAirplaneImageSrc: '$airplaneImageSrc',
+                                tripAirplaneCapacity: '$airplaneCapacity',
+                                tripAirplaneFlightNumber: '$airplaneFlightNumber',
+                                tripAirplaneCreateAt: '$airplaneCreateAt',
+                            },
+                        },
+                    ],
+                    as: 'airplaneObject',
+                }
+            }, {
                 $project: {
                     tripId: '$_id',
+                    tripAirplaneObject: '$airplaneObject',
                     tripName: 1,
                     tripDst: 1,
                     tripSrc: 1,
-                    tripPNR: 1,
                     tripPrice: 1,
+                    tripTakeOffTime: 1,
+                    tripLandingTime: 1,
+                    tripDate: 1,
                     tripInternalOrExternal: 1,
                     tripBusinessOrEconomy: 1,
-                    tripIsCanceled: 1,
-                    tripCreateAt: 1,
                 }
             }
         ]).exec((error, trips) => {
-            error ? next(error) :
-                res.json(new Serializer('trips', {
+            error ? next(error) : trips === null ? next(new JoiError("NoTripError", "There is no trips in the database", 44, 404))
+                : res.json(new Serializer('trips', {
                     attributes: [
                         'tripId',
+                        'tripAirplaneObject',
                         'tripName',
                         'tripDst',
                         'tripSrc',
                         'tripPrice',
+                        'tripTakeOffTime',
+                        'tripLandingTime',
+                        'tripDate',
                         'tripInternalOrExternal',
                         'tripBusinessOrEconomy',
-                        'tripCreateAt',
-                        'tripIsCanceled'
                     ],
-                    // tripObject: {
-                    //     attributes: ['airplaneAirlineName',
-                    //         'airplaneModel',
-                    //         'airplaneImageSrc',
-                    //         'airplaneCapacity',
-                    //         'airplaneFlightNumber',
-                    //         'airplaneTicketTakeOffTime',
-                    //         'airplaneTicketLandingTime',
-                    //         'airplaneCreateAt']
-                    // }
+                    tripAirplaneObject: {
+                        attributes: [
+                            'tripAirplaneId',
+                            'tripAirplaneAirlineName',
+                            'tripAirplaneModel',
+                            'tripAirplaneImageSrc',
+                            'tripAirplaneCapacity',
+                            'tripAirplaneFlightNumber',
+                            'tripAirplaneCreateAt',
+                        ]
+                    }
                 }).serialize(trips));
         });
     } catch (error) {
@@ -94,16 +124,77 @@ export const readSingleTrip = (req, res, next) => {
     try {
         console.log("-------readSingleTrip-------");
         const {tripId} = req.body
-        Trip.findOne({_id: tripId}, (error, trip) => {
+        Trip.aggregate([
+            {
+                $match: {_id: mongoose.Types.ObjectId(tripId)}
+            }, {
+                $lookup: {
+                    from: 'airplanes',
+                    let: {'tripAirplaneId': '$tripAirplaneId'},
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $eq: ['$_id', "$$tripAirplaneId"]
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                tripAirplaneId: '$_id',
+                                tripAirplaneAirlineName: '$airplaneAirlineName',
+                                tripAirplaneModel: '$airplaneModel',
+                                tripAirplaneImageSrc: '$airplaneImageSrc',
+                                tripAirplaneCapacity: '$airplaneCapacity',
+                                tripAirplaneFlightNumber: '$airplaneFlightNumber',
+                                tripAirplaneCreateAt: '$airplaneCreateAt',
+                            },
+                        },
+                    ],
+                    as: 'airplaneObject',
+                }
+            }, {
+                $project: {
+                    tripId: '$_id',
+                    tripAirplaneObject: '$airplaneObject',
+                    tripName: 1,
+                    tripDst: 1,
+                    tripSrc: 1,
+                    tripPrice: 1,
+                    tripTakeOffTime: 1,
+                    tripLandingTime: 1,
+                    tripDate: 1,
+                    tripInternalOrExternal: 1,
+                    tripBusinessOrEconomy: 1,
+                }
+            }
+        ]).exec((error, trip) => {
             error ? next(error) : trip === null ? next(new JoiError("NoTripError", "There is no trips in the database", 44, 404))
                 : res.json(new Serializer('trip', {
                     attributes: [
-                        'tripName', 'tripDst', 'tripSrc', 'tripPrice',
+                        'tripId',
+                        'tripAirplaneObject',
+                        'tripName',
+                        'tripDst',
+                        'tripSrc',
+                        'tripPrice',
+                        'tripTakeOffTime',
+                        'tripLandingTime',
+                        'tripDate',
                         'tripInternalOrExternal',
                         'tripBusinessOrEconomy',
-                        'tripCreateAt',
-                        'tripIsCanceled'
-                    ]
+                    ],
+                    tripAirplaneObject: {
+                        attributes: [
+                            'tripAirplaneId',
+                            'tripAirplaneAirlineName',
+                            'tripAirplaneModel',
+                            'tripAirplaneImageSrc',
+                            'tripAirplaneCapacity',
+                            'tripAirplaneFlightNumber',
+                            'tripAirplaneCreateAt',
+                        ]
+                    }
                 }).serialize(trip));
         });
     } catch (error) {
@@ -115,7 +206,9 @@ export const deleteTrip = (req, res, next) => {
         console.log("-------deleteTrip-------");
         const {tripId} = req.body
         Trip.findOneAndDelete({_id: mongoose.Types.ObjectId(tripId)}, (error, ticket) => {
-            error ? next(error) : ticket ? res.status(200).send() : next(new JoiError("NoTripError", "There is no trips in the database", 44, 404))
+            error ? next(error) : ticket ? Airplane.findOneAndUpdate({_id: ticket.tripAirplaneId}, {$pull: {airplaneTripId: tripId}}, (error, airplane) => {
+                error ? next(error) : airplane ? res.status(200).send() : next(new JoiError("AirplaneNotFound", "This airplane doesn't exist.", 44, 404))
+            }) : next(new JoiError("NoTripError", "There is no trips in the database", 44, 404))
         })
     } catch (error) {
         next(error)
@@ -126,24 +219,28 @@ export const updateTrip = (req, res, next) => {
         console.log("-------updateTrip-------");
         const {
             tripId,
+            tripAirplaneId,
             tripName,
             tripDst,
             tripSrc,
             tripPrice,
+            tripTakeOffTime,
+            tripLandingTime,
+            tripDate,
             tripInternalOrExternal,
             tripBusinessOrEconomy,
-            tripCreateAt,
-            tripIsCanceled
         } = req.body;
         Trip.findOneAndUpdate({_id: mongoose.Types.ObjectId(tripId)}, {
+            tripAirplaneId,
             tripName,
             tripDst,
             tripSrc,
             tripPrice,
+            tripTakeOffTime,
+            tripLandingTime,
+            tripDate,
             tripInternalOrExternal,
             tripBusinessOrEconomy,
-            tripCreateAt,
-            tripIsCanceled
         }, (error, trip) => {
             error ? next(error) : trip ? res.status(200).send() : next(new JoiError("NoTripFound", "This trip doesn't exist in database", 44, 404));
         })

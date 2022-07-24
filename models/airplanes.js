@@ -32,16 +32,6 @@ const airplaneSchema = new mongoose.Schema({
         unique: true,
         trim: true
     },
-    airplaneTicketTakeOffTime: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    airplaneTicketLandingTime: {
-        type: String,
-        required: true,
-        trim: true
-    },
     airplaneCreateAt: {
         type: Date,
         default: Date.now()

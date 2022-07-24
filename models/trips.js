@@ -20,15 +20,15 @@ const tripSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    tripTakeOffTime:{
+    tripTakeOffTime: {
         type: String,
         required: true,
     },
-    tripLandingTime:{
+    tripLandingTime: {
         type: String,
         required: true,
     },
-    tripDate:{
+    tripDate: {
         type: String,
         required: true,
     },
@@ -44,17 +44,20 @@ const tripSchema = new mongoose.Schema({
         enum: ['Business', 'Economy'],
         trim: true
     },
+    tripAirplaneId: {
+        type: mongoose.Types.ObjectId,
+        required: true
+    },
     tripIsCanceled: {
         type: Boolean,
         required: true,
         default: false
     },
-
     tripCreateAt: {
         type: Date,
         default: Date.now()
     }
-},{versionKey: false})
+}, {versionKey: false})
 tripSchema.post('save', (error, doc, next) => {
     (error.code === 11000) ? next(new JoiError("UniqueTripError", "Your trip name is repetitive", 40, 400, {
         "pointer": "/trip/makeTrip",
