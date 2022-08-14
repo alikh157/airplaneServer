@@ -2,6 +2,7 @@ import JoiError from "../exceptions/validationError";
 import Customer from '../models/customers';
 import Ticket from '../models/tickets';
 import {Serializer} from "jsonapi-serializer";
+import Trip from "../models/trips";
 
 export const buyTicket = (req, res, next) => {
     try {
@@ -48,90 +49,114 @@ export const cancelTicket = (req, res, next) => {
     }
 }
 
-export const searchTicket = (req, res, next) => {
+export const searchTrip = (req, res, next) => {
     try {
-        console.log("-------searchTicket-------");
+        console.log("-------searchTrip-------");
         const {query} = req.body;
-        Ticket.aggregate([
+        Trip.aggregate([
             {
                 $lookup: {
                     from: 'airplanes',
-                    localField: 'ticketAirplaneId',
-                    foreignField: '_id',
-                    as: 'ticketAirplaneObject'
-                }
+                    let: {'tripAirplaneId': '$tripAirplaneId'},
+                    as: 'airplaneObject',
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $eq: ['$_id', "$$tripAirplaneId"]
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                tripAirplaneId: '$_id',
+                                tripAirplaneAirlineName: '$airplaneAirlineName',
+                                tripAirplaneModel: '$airplaneModel',
+                                tripAirplaneImageSrc: '$airplaneImageSrc',
+                                tripAirplaneCapacity: '$airplaneCapacity',
+                                tripAirplaneFlightNumber: '$airplaneFlightNumber',
+                                tripAirplaneCreateAt: '$airplaneCreateAt',
+                            },
+                        }
+                    ],
+                },
+
             },
             {
                 $match: {
                     $or: [
                         {
-                            'airplane.airplaneAirlineName': {$regex: query, $options: 'i'}
+                            'airplaneObject.tripAirplaneAirlineName': {$regex: query, $options: 'i'}
                         }, {
-                            'airplane.airplaneModel': {$regex: query, $options: 'i'}
+                            'airplaneObject.tripAirplaneModel': {$regex: query, $options: 'i'}
+                        },  {
+                            'airplaneObject.tripAirplaneFlightNumber': {$regex: query, $options: 'i'}
                         }, {
-                            'airplane.airplaneCapacity': {$regex: query, $options: 'i'}
+                            'tripTakeOffTime': {$regex: query, $options: 'i'}
                         }, {
-                            'airplane.airplaneFlightNumber': {$regex: query, $options: 'i'}
+                            'tripLandingTime': {$regex: query, $options: 'i'}
                         }, {
-                            'airplane.airplaneTicketTakeOffTime': {$regex: query, $options: 'i'}
-                        }, {
-                            'airplane.airplaneTicketLandingTime': {$regex: query, $options: 'i'}
+                            'tripInternalOrExternal': {$regex: query, $options: 'i'}
                         },
                         {
+                            'tripDate': {$regex: query, $options: 'i'}
+                        }, {
                             'ticketNumber': {$regex: query, $options: 'i'}
                         },
                         {
-                            'ticketSrc': {$regex: query, $options: 'i'}
+                            'tripSrc': {$regex: query, $options: 'i'}
+                        }, {
+                            'tripDst': {$regex: query, $options: 'i'}
                         },
                         {
-                            'ticketPNR': {$regex: query, $options: 'i'}
+                            'tripPrice': {$regex: query, $options: 'i'}
                         },
                     ]
                 },
             },
             {
                 $project: {
-                    ticketName: 1,
-                    ticketDst: 1,
-                    ticketSrc: 1,
-                    ticketPNR: 1,
-                    ticketPrice: 1,
-                    ticketInternalOrExternal: 1,
-                    ticketBusinessOrEconomy: 1,
-                    ticketNumber: 1,
-                    ticketIsCanceled: 1,
-                    ticketCreateAt: 1,
-                    ticketAirplaneObject: {$arrayElemAt: ["$ticketAirplaneObject", 0]},
+                    tripId: '$_id',
+                    tripName: 1,
+                    tripDst: 1,
+                    tripSrc: 1,
+                    tripPrice: 1,
+                    tripTakeOffTime: 1,
+                    tripLandingTime: 1,
+                    tripDate: 1,
+                    tripInternalOrExternal: 1,
+                    tripBusinessOrEconomy: 1,
+                    tripAirplaneObject: {$arrayElemAt: ["$airplaneObject", 0]},
                 }
             }
-        ]).exec((error, tickets) => {
+        ]).exec((error, trips) => {
             error ? next(error) :
-                res.json(new Serializer('tickets', {
+                res.json(new Serializer('trips', {
                     attributes: [
-                        'ticketName',
-                        'ticketDst',
-                        'ticketSrc',
-                        'ticketPNR',
-                        'ticketPrice',
-                        'ticketInternalOrExternal',
-                        'ticketBusinessOrEconomy',
-                        'ticketNumber',
-                        'ticketAirplaneId',
-                        'ticketIsCanceled',
-                        'ticketCreateAt',
-                        'ticketAirplaneObject'
+                        'tripId',
+                        'tripAirplaneObject',
+                        'tripName',
+                        'tripDst',
+                        'tripSrc',
+                        'tripPrice',
+                        'tripTakeOffTime',
+                        'tripLandingTime',
+                        'tripDate',
+                        'tripInternalOrExternal',
+                        'tripBusinessOrEconomy',
                     ],
-                    ticketAirplaneObject: {
-                        attributes: ['airplaneAirlineName',
-                            'airplaneModel',
-                            'airplaneImageSrc',
-                            'airplaneCapacity',
-                            'airplaneFlightNumber',
-                            'airplaneTicketTakeOffTime',
-                            'airplaneTicketLandingTime',
-                            'airplaneCreateAt',]
+                    tripAirplaneObject: {
+                        attributes: [
+                            'tripAirplaneId',
+                            'tripAirplaneAirlineName',
+                            'tripAirplaneModel',
+                            'tripAirplaneImageSrc',
+                            'tripAirplaneCapacity',
+                            'tripAirplaneFlightNumber',
+                            'tripAirplaneCreateAt',
+                        ]
                     }
-                }).serialize(tickets));
+                }).serialize(trips));
         });
     } catch (error) {
         next(error)

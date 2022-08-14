@@ -10,7 +10,8 @@ import tripRouter from "./routes/tripRouter";
 import accountRouter from "./routes/accountRouter";
 
 const corsOptions = {
-    origin: 'http://localhost:3000'
+    origin: 'http://localhost:3000',
+    credentials:true
 }
 dotenv.config();
 mongoose.connect(process.env.DB_URL, () => console.log("database connected..."))

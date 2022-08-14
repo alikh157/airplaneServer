@@ -7,6 +7,11 @@ const accountSchema = new mongoose.Schema({
         trim:true,
         required:true
     },
+    accountIsAdmin:{
+        type:Boolean,
+        required:true,
+        default:false
+    },
     accountPhoneNumber:{
         type:String,
         required:true,

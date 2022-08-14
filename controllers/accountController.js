@@ -11,7 +11,7 @@ export const loginAccount = (req, res, next) => {
         Account.findOne({accountPhoneNumber: req.body.accountPhoneNumber}, ((error, account) => {
             error ? next(new JoiError("FindAccountError", error.message, 50, 500)) : account ? bcrypt.compare(req.body.accountPlainPassword, account.accountHashedPassword, (error, result) => {
                 error ? next(new JoiError("PassCompareError", "some thing happening with your pass", 50,500)) : result ? jwt.sign({_id: account._id}, process.env.HASHED, {expiresIn: '3h'}, (error, token) => {
-                    error ? next(new JoiError("TokenAssignError", "some thing happening in assigning token", 50,500)) : token ? res.status(200).header('auth-token',token).json(new Serializer('tickets', {
+                    error ? next(new JoiError("TokenAssignError", "some thing happening in assigning token", 50,500)) : token ? res.status(200).header('auth-token',token).json(new Serializer('token', {
                         attributes:['auth-token']
                     }).serialize({'auth-token': token})) : next(token)
                 }) :next(new JoiError("LoginError", "your phoneNumber or password isn't correct", 41, 401))

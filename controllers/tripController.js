@@ -75,7 +75,7 @@ export const readAllTrips = (req, res, next) => {
             }, {
                 $project: {
                     tripId: '$_id',
-                    tripAirplaneObject: '$airplaneObject',
+                    tripAirplaneObject: { $arrayElemAt: [ "$airplaneObject", 0 ] },
                     tripName: 1,
                     tripDst: 1,
                     tripSrc: 1,
@@ -156,7 +156,7 @@ export const readSingleTrip = (req, res, next) => {
             }, {
                 $project: {
                     tripId: '$_id',
-                    tripAirplaneObject: '$airplaneObject',
+                    tripAirplaneObject: { $arrayElemAt: [ "$airplaneObject", 0 ] },
                     tripName: 1,
                     tripDst: 1,
                     tripSrc: 1,
