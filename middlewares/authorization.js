@@ -11,7 +11,7 @@ export default (req, res, next) => {
                 if (error) {
                     next(new validationError("TokenError","Your token is not  authorized!",41,401,{ pointer: req.path, parameter: 'data.token' }))
                 }
-                req.user = Token
+                req.user = Token;
                 next()
             })
         }

@@ -10,7 +10,7 @@ export const loginAccount = (req, res, next) => {
         const {accountPhoneNumber, accountPlainPassword} = req.body;
         Account.findOne({accountPhoneNumber: req.body.accountPhoneNumber}, ((error, account) => {
             error ? next(new JoiError("FindAccountError", error.message, 50, 500)) : account ? bcrypt.compare(req.body.accountPlainPassword, account.accountHashedPassword, (error, result) => {
-                error ? next(new JoiError("PassCompareError", "some thing happening with your pass", 50,500)) : result ? jwt.sign({_id: account._id}, process.env.HASHED, {expiresIn: '3h'}, (error, token) => {
+                error ? next(new JoiError("PassCompareError", "some thing happening with your pass", 50,500)) : result ? jwt.sign({userId: account._id}, process.env.HASHED, {expiresIn: '3h'}, (error, token) => {
                     error ? next(new JoiError("TokenAssignError", "some thing happening in assigning token", 50,500)) : token ? res.status(200).header('auth-token',token).json(new Serializer('token', {
                         attributes:['auth-token']
                     }).serialize({'auth-token': token})) : next(token)
@@ -41,8 +41,9 @@ export const signupAccount = async (req, res, next) => {
 export const readAccount = (req, res, next) => {
     try {
         console.log("-------readAccount-------");
-        const {accountId} = req.user;
-        Account.findOne({_id: accountId}, (error, account) => {
+        const {userId} = req.user;
+        console.log(userId)
+        Account.findOne({_id: userId}, (error, account) => {
             error ? next(new JoiError("ReadAccountError", error.message, 50, 500)) : account ? res.json(new Serializer('account', {
                 attributes: [
                     'accountPhoneNumber',

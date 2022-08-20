@@ -100,7 +100,8 @@ export const searchTrip = (req, res, next) => {
                         },
                         {
                             'tripDate': {$regex: query, $options: 'i'}
-                        }, {
+                        },
+                        {
                             'ticketNumber': {$regex: query, $options: 'i'}
                         },
                         {
