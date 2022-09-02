@@ -75,7 +75,7 @@ export const readAllTrips = (req, res, next) => {
             }, {
                 $project: {
                     tripId: '$_id',
-                    tripAirplaneObject: { $arrayElemAt: [ "$airplaneObject", 0 ] },
+                    tripAirplaneObject: {$arrayElemAt: ["$airplaneObject", 0]},
                     tripName: 1,
                     tripDst: 1,
                     tripSrc: 1,
@@ -87,34 +87,45 @@ export const readAllTrips = (req, res, next) => {
                     tripBusinessOrEconomy: 1,
                 }
             }
-        ]).exec((error, trips) => {
-            error ? next(error) : trips === null ? next(new JoiError("NoTripError", "There is no trips in the database", 44, 404))
-                : res.json(new Serializer('trips', {
-                    attributes: [
-                        'tripId',
-                        'tripAirplaneObject',
-                        'tripName',
-                        'tripDst',
-                        'tripSrc',
-                        'tripPrice',
-                        'tripTakeOffTime',
-                        'tripLandingTime',
-                        'tripDate',
-                        'tripInternalOrExternal',
-                        'tripBusinessOrEconomy',
-                    ],
-                    tripAirplaneObject: {
+        ]).exec((error, go) => {
+            if (error)
+                next(error)
+            else if (go === null)
+                next(new JoiError("NoTripError", "There is no trips in the database", 44, 404))
+            else {
+                const trips = [{"go": go}];
+
+                res.json(new Serializer('trips', {
+                    attributes: ['go'],
+                    go: {
+
                         attributes: [
-                            'tripAirplaneId',
-                            'tripAirplaneAirlineName',
-                            'tripAirplaneModel',
-                            'tripAirplaneImageSrc',
-                            'tripAirplaneCapacity',
-                            'tripAirplaneFlightNumber',
-                            'tripAirplaneCreateAt',
-                        ]
+                            'tripId',
+                            'tripAirplaneObject',
+                            'tripName',
+                            'tripDst',
+                            'tripSrc',
+                            'tripPrice',
+                            'tripTakeOffTime',
+                            'tripLandingTime',
+                            'tripDate',
+                            'tripInternalOrExternal',
+                            'tripBusinessOrEconomy',
+                        ],
+                        tripAirplaneObject: {
+                            attributes: [
+                                'tripAirplaneId',
+                                'tripAirplaneAirlineName',
+                                'tripAirplaneModel',
+                                'tripAirplaneImageSrc',
+                                'tripAirplaneCapacity',
+                                'tripAirplaneFlightNumber',
+                                'tripAirplaneCreateAt',
+                            ]
+                        }
                     }
                 }).serialize(trips));
+            }
         });
     } catch (error) {
         next(error)
@@ -156,7 +167,7 @@ export const readSingleTrip = (req, res, next) => {
             }, {
                 $project: {
                     tripId: '$_id',
-                    tripAirplaneObject: { $arrayElemAt: [ "$airplaneObject", 0 ] },
+                    tripAirplaneObject: {$arrayElemAt: ["$airplaneObject", 0]},
                     tripName: 1,
                     tripDst: 1,
                     tripSrc: 1,

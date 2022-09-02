@@ -10,7 +10,7 @@ export const loginAccount = (req, res, next) => {
         const {accountPhoneNumber, accountPlainPassword} = req.body;
         Account.findOne({accountPhoneNumber: req.body.accountPhoneNumber}, ((error, account) => {
             error ? next(new JoiError("FindAccountError", error.message, 50, 500)) : account ? bcrypt.compare(req.body.accountPlainPassword, account.accountHashedPassword, (error, result) => {
-                error ? next(new JoiError("PassCompareError", "some thing happening with your pass", 50,500)) : result ? jwt.sign({userId: account._id}, process.env.HASHED, {expiresIn: '3h'}, (error, token) => {
+                error ? next(new JoiError("PassCompareError", "some thing happening with your pass", 50,500)) : result ? jwt.sign({userId: account._id}, process.env.HASHED, {expiresIn: '8h'}, (error, token) => {
                     error ? next(new JoiError("TokenAssignError", "some thing happening in assigning token", 50,500)) : token ? res.status(200).header('auth-token',token).json(new Serializer('token', {
                         attributes:['auth-token']
                     }).serialize({'auth-token': token})) : next(token)
@@ -59,13 +59,15 @@ export const readAccount = (req, res, next) => {
 export const updateAccount = (req, res, next) => {
     try {
         console.log("-------updateAccount-------");
-        const {accountId} = req.user;
+        const {userId} = req.user;
         const {accountPhoneNumber, accountEmail, accountPlainPassword} = req.body;
-        Account.findOneAndUpdate({_id: accountId}, {
+        Account.findOneAndUpdate({_id: userId}, {
             accountPhoneNumber,
             accountEmail,
             accountPlainPassword
-        }, (error, account) => {
+        }, {
+            new: true
+        },(error, account) => {
             error ? next(new JoiError("UpdateAccountError", error.message, 50, 500)) : account ? res.json(new Serializer('account', {
                 attributes: [
                     'accountPhoneNumber',

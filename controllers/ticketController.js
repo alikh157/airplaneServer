@@ -4,41 +4,31 @@ import {Serializer} from "jsonapi-serializer";
 import mongoose from "mongoose";
 import randomstring from 'randomstring';
 
-export const createTicket = (req, res, next) => {
-    try {
-        console.log("-------makeTicket-------");
-        const {
-            ticketName,
-            ticketDst,
-            ticketSrc,
-            ticketPrice,
-            ticketInternalOrExternal,
-            ticketBusinessOrEconomy,
-            ticketNumber,
-            ticketAirplaneId,
-            ticketTakenBy
-        } = req.body;
-        Ticket.create({
-            ticketName,
-            ticketDst,
-            ticketSrc,
-            ticketPrice,
-            ticketInternalOrExternal,
-            ticketBusinessOrEconomy,
-            ticketNumber,
-            ticketPNR: randomstring.generate({
-                charset: 'alphanumeric',
-                length: 6
-            }).toUpperCase(),
-            ticketAirplaneId,
-            ticketTakenBy
-        }, (error) => {
-            error ? next(error) : res.status(200).send();
-        })
-    } catch (error) {
-        next(error)
-    }
-}
+// export const createTicket = (req, res, next) => {
+//     try {
+//         console.log("-------createTicket-------");
+//         const {
+//             ticketTripId,
+//             ticketTakenBy
+//         } = req.body;
+//         Ticket.create({
+//             ticketNumber:randomstring.generate({
+//                 charset: 'numeric',
+//                 length: 8
+//             }),
+//             ticketPNR: randomstring.generate({
+//                 charset: 'alphanumeric',
+//                 length: 6
+//             }).toUpperCase(),
+//             ticketTripId,
+//             ticketTakenBy
+//         }, (error) => {
+//             error ? next(error) : res.status(200).send();
+//         })
+//     } catch (error) {
+//         next(error)
+//     }
+// }
 export const readTickets = (req, res, next) => {
     try {
         console.log("-------readTickets-------");

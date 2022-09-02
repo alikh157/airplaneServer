@@ -10,7 +10,7 @@ import tripRouter from "./routes/tripRouter";
 import accountRouter from "./routes/accountRouter";
 
 const corsOptions = {
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000','http://localhost:3002',],
     credentials:true
 }
 dotenv.config();

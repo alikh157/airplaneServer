@@ -2,41 +2,11 @@ import mongoose from "mongoose";
 import JoiError from "../Exceptions/validationError";
 
 const ticketSchema = new mongoose.Schema({
-    ticketName: {
-        type: String,
-        required: true,
-    },
-    ticketDst: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    ticketSrc: {
-        type: String,
-        required: true,
-        trim: true
-    },
     ticketPNR: {
         type: String,
         required: true,
         trim: true,
         maxlength: 6
-    },
-    ticketPrice: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    ticketInternalOrExternal: {
-        type: String,
-        required: true,
-        trim: true,
-        enum: ['Internal', 'External']
-    },
-    ticketBusinessOrEconomy: {
-        type: String,
-        required: true,
-        trim: true
     },
     ticketNumber: {
         type: String,
@@ -44,19 +14,15 @@ const ticketSchema = new mongoose.Schema({
         unique: true,
         trim: true
     },
-    ticketAirplaneId: {
+    ticketTripId: {
         type: mongoose.Types.ObjectId,
-        ref: 'airplanes',
+        ref: 'trips',
         required: true,
     },
     ticketIsCanceled: {
         type: Boolean,
         required: true,
         default: false
-    },
-    ticketCanceledBy: {
-        type: mongoose.Types.ObjectId,
-        ref: 'customers'
     },
     ticketTakenBy: {
         type: mongoose.Types.ObjectId,

@@ -9,7 +9,7 @@ import {
 
 const ticketRouter = express.Router();
 
-ticketRouter.post('/ticket/create', [],createTicket);
+// ticketRouter.post('/ticket/create', [],createTicket);
 ticketRouter.post('/ticket/read', [],readSingleTicket);
 ticketRouter.post('/ticket/get', [],readTickets);
 ticketRouter.post('/ticket/delete', [],deleteTicket);
