@@ -15,7 +15,8 @@ export const loginAccount = (req, res, next) => {
                         attributes:['auth-token']
                     }).serialize({'auth-token': token})) : next(token)
                 }) :next(new JoiError("LoginError", "your phoneNumber or password isn't correct", 41, 401))
-            }) : next(new JoiError("LoginError", "you are not registered yet! please first signup and then try again", 41, 401))
+            }) : next(new JoiError("LoginError", "شما هنوز ثبت نام نکرده اید! لطفا ابتدا ثبت نام کرده و سپس دوباره امتحان کنید.", 41, 401))
+            // }) : next(new JoiError("LoginError", "you are not registered yet! please first signup and then try again", 41, 401))
         }))
     } catch (e) {
         next(e);
